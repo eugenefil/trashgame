@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<title>Вход - TrashGame</title>
+<style>
+li {
+  list-style-type: none;
+}
+</style>
+</head>
+<body>
+
+<strong>Войти</strong>
+<form action="/login" method="post">
+<ul>
+<li>
+	<label for="name">Логин:</label>
+	<input type="text" id="name" name="username" />
+</li>
+<li>
+	<label for="pass">Пароль:</label>
+	<input type="text" id="pass" name="password" />
+</li>
+<li>
+	<input type="submit" value="Войти" />
+</li>
+</ul>
+</form>
+
+<strong>Создать аккаунт</strong>
+<form action="/login" method="post">
+<input type="hidden" name="creating" value="t">
+<ul>
+<li>
+	<label for="name">Логин:</label>
+	<input type="text" id="name" name="username" />
+</li>
+<li>
+	<label for="pass">Пароль:</label>
+	<input type="text" id="pass" name="password" />
+</li>
+<li>
+	<input type="submit" value="Создать аккаунт" />
+</li>
+</ul>
+</form>
+
+</body>
+</html>
