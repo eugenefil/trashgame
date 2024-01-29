@@ -10,6 +10,10 @@
 {% block header %}{% endblock %}
 </header>
 
+{% for msg in get_flashed_messages() %}
+    <div>{{ msg }}</div>
+{% endfor %}
+
 <main>
 {% block main %}{% endblock %}
 </main>

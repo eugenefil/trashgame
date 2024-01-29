@@ -1,9 +1,15 @@
-from flask import Flask, render_template, session, request
-from flask import redirect, abort, url_for
-from hashlib import sha256
 import os
+import re
+
+from flask import (Flask, render_template, session, request,
+    redirect, abort, url_for, flash)
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 app = Flask(__name__)
+app.config.from_mapping(SECRET_KEY='dev')
+users_dir = os.path.join(app.instance_path, 'users')
+
 
 @app.route('/')
 def index():
@@ -11,46 +17,32 @@ def index():
         return redirect(url_for('underground_boss'))
     return render_template('index.html')
 
-def create_user(form):
-    try:
-        os.mkdir(f"users/{form['username']}")
-    except FileExistsError:
-        return abort(509)
-    except:
-        return abort(500)
+
+@app.route('/register', methods=('GET', 'POST'))
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if not username:
+            flash('Нужно ввести логин')
+        elif not password:
+            flash('Нужно ввести пароль')
+        elif re.fullmatch('[-_a-zA-Z0-9]+', username) is None:
+            flash('Логин может включать только буквы, цифры, дефис и подчеркивание')
+        else:
+            user_dir = os.path.join(users_dir, username)
+            try:
+                os.mkdir(user_dir)
+            except FileExistsError:
+                flash(f'Пользователь с логином {username} уже существует')
+            except:
+                abort(500)
+            else:
+                with open(os.path.join(user_dir, 'password'), 'w') as f:
+                    f.write(generate_password_hash(password))
+                return redirect('login.html')
+
+    return render_template('register.html')
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'GET':
-        return render_template('login.html')
-
-    if 'username' in session:
-        return abort(400)
-    if 'username' not in request.form:
-        return abort(400)
-    if not 'password' in request.form:
-        return abort(400)
-
-    if 'creating' in request.form:
-        return create_user(request.form)
-    
-    try:
-        with open(f'users/{username}/password', 'r') as f:
-            pwhash = f.read().strip()
-    except (FileNotFoundError, IOError):
-        return abort(401)
-
-    h = sha256()
-    h.update(request.form['password'])
-    if h.hexdigest() != pwhash:
-        return abort(401)
-
-    return redirect(url_for('underground_boss'))
-
-@app.route('/underground_boss')
-def underground_boss():
-    return abort(404)
-
-
-os.makedirs('users', exist_ok=True)
+os.makedirs(users_dir, exist_ok=True)
